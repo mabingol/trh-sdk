@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/tokamak-network/trh-sdk/pkg/crypto"
 	"github.com/tokamak-network/trh-sdk/pkg/types"
 )
 
@@ -92,12 +93,33 @@ func ReadConfigFromJSONFile(deploymentPath string) (*types.Config, error) {
 	}
 
 	var config types.Config
-	if err := json.Unmarshal(data, &config); err != nil {
-		return nil, err
+
+	// Check if settings are encrypted
+	if isEncryptedSettings(data) {
+		// Get password from env or prompt
+		password, err := getSettingsPassword()
+		if err != nil {
+			return nil, fmt.Errorf("failed to get password: %w", err)
+		}
+
+		// Decrypt the settings
+		decrypted, err := decryptSettings(data, password)
+		if err != nil {
+			return nil, fmt.Errorf("decryption failed: %w", err)
+		}
+
+		if err := json.Unmarshal(decrypted, &config); err != nil {
+			return nil, err
+		}
+	} else {
+		// Plain JSON - unmarshal directly
+		if err := json.Unmarshal(data, &config); err != nil {
+			return nil, err
+		}
 	}
 
 	// If L2ChainId doesn't exist, fetch it from the L2 RPC
-	if config.L2ChainID == 0 {
+	if config.L2ChainID == 0 && config.L2RpcUrl != "" {
 		l2Provider, err := ethclient.Dial(config.L2RpcUrl)
 		if err != nil {
 			fmt.Println("Error connecting to L2 blockchain:", err)
@@ -161,4 +183,31 @@ func ReadMetadataInfoFromJSONFile(deploymentPath string, chainId uint64) (*types
 		return nil, err
 	}
 	return &metadataInfo, nil
+}
+
+// isEncryptedSettings checks if the settings file is encrypted
+func isEncryptedSettings(data []byte) bool {
+	return crypto.IsEncryptedKeystore(data)
+}
+
+// getSettingsPassword gets password from env var or prompts user
+func getSettingsPassword() ([]byte, error) {
+	return crypto.GetPasswordFromEnvOrPrompt(
+		crypto.PasswordEnvVar,
+		"Enter settings password: ",
+	)
+}
+
+// decryptSettings decrypts the encrypted settings data
+func decryptSettings(data, password []byte) ([]byte, error) {
+	ks, err := crypto.UnmarshalKeystore(data)
+	if err != nil {
+		return nil, err
+	}
+	return crypto.DecryptKeystore(ks, password)
+}
+
+// EncryptAndSaveConfig encrypts and saves config to settings.json
+func EncryptAndSaveConfig(deploymentPath string, config *types.Config, password []byte) error {
+	return crypto.WriteEncryptedConfig(deploymentPath, config, password)
 }

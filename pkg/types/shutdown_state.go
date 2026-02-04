@@ -10,16 +10,16 @@ import (
 
 // ShutdownState represents the state of shutdown operations
 type ShutdownState struct {
-	ChainID         uint64 `json:"chainId"`
-	L2ChainID       uint64 `json:"l2ChainId"`
-	ThanosRoot      string `json:"thanosRoot"`
-	DeploymentsPath string `json:"deploymentsPath"`
-	DataDir         string `json:"dataDir"`
-	LastGenAt       string `json:"lastGenAt,omitempty"`
-	LastDryRunAt    string `json:"lastDryRunAt,omitempty"`
-	LastSendAt      string `json:"lastSendAt,omitempty"`
+	ChainID          uint64 `json:"chainId"`
+	L2ChainID        uint64 `json:"l2ChainId"`
+	ThanosRoot       string `json:"thanosRoot"`
+	DeploymentsPath  string `json:"deploymentsPath"`
+	DataDir          string `json:"dataDir"`
+	LastGenAt        string `json:"lastGenAt,omitempty"`
+	LastDryRunAt     string `json:"lastDryRunAt,omitempty"`
+	LastSendAt       string `json:"lastSendAt,omitempty"`
 	LastSnapshotPath string `json:"lastSnapshotPath,omitempty"`
-	LastCommand     string `json:"lastCommand,omitempty"`
+	LastCommand      string `json:"lastCommand,omitempty"`
 }
 
 // GetShutdownStateFilePath returns the path to the shutdown state file
@@ -76,7 +76,7 @@ func (s *ShutdownState) Save() error {
 
 	// Write atomically by writing to temp file first
 	tempPath := filePath + ".tmp"
-	if err := os.WriteFile(tempPath, data, 0644); err != nil {
+	if err := os.WriteFile(tempPath, data, 0600); err != nil {
 		return fmt.Errorf("failed to write temp state file: %w", err)
 	}
 

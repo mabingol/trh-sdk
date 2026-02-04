@@ -169,6 +169,9 @@ type LoggingConfig struct {
 const ConfigFileName = "settings.json"
 const MetadataInfoFileName = "stack-info.json"
 
+// SecureFileMode is the permission for sensitive files (owner read/write only)
+const SecureFileMode = 0600
+
 func (c *Config) WriteToJSONFile(deploymentPath string) error {
 	data, err := json.MarshalIndent(c, "", "  ")
 	if err != nil {
@@ -177,8 +180,8 @@ func (c *Config) WriteToJSONFile(deploymentPath string) error {
 	}
 
 	fileName := fmt.Sprintf("%s/%s", deploymentPath, ConfigFileName)
-	// Write JSON to a file
-	err = os.WriteFile(fileName, data, 0644)
+	// Write JSON to a file with secure permissions
+	err = os.WriteFile(fileName, data, SecureFileMode)
 	if err != nil {
 		fmt.Println("Error writing JSON file:", err)
 		return err
