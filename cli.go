@@ -77,6 +77,17 @@ Examples:
 `,
 			},
 			{
+				Name:   "encrypt-settings",
+				Usage:  "Encrypt settings.json with password protection",
+				Action: commands.ActionEncryptSettings(),
+				Description: `Encrypt your settings.json file with Argon2id password protection.
+
+Examples:
+  # Encrypt existing settings
+  trh-sdk encrypt-settings
+`,
+			},
+			{
 				Name:  "install",
 				Usage: fmt.Sprintf("Install plugins(allowed: %s)", strings.Join(constants.SupportedPluginsList, ", ")),
 				Flags: []cli.Flag{
