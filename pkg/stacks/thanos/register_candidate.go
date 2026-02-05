@@ -411,7 +411,7 @@ func (t *ThanosStack) verifyRegisterCandidates(ctx context.Context, registerCand
 		CandidateAddress:    candidateAddress,
 	}
 
-	err = t.deployConfig.WriteToJSONFile(t.deploymentPath)
+	err = utils.WriteConfigToJSONFile(t.deploymentPath, t.deployConfig)
 	if err != nil {
 		fmt.Println("Failed to write settings file:", err)
 		return err

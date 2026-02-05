@@ -142,7 +142,7 @@ func (t *ThanosStack) deployNetworkToAWS(ctx context.Context, inputs *DeployInfr
 	awsLoginInputs := t.awsProfile.AwsConfig
 
 	t.deployConfig.AWS = awsLoginInputs
-	if err := t.deployConfig.WriteToJSONFile(t.deploymentPath); err != nil {
+	if err := utils.WriteConfigToJSONFile(t.deploymentPath, t.deployConfig); err != nil {
 		t.logger.Error("failed to write settings file", "err", err)
 		return fmt.Errorf("failed to write settings file: %w", err)
 	}
@@ -254,7 +254,7 @@ func (t *ThanosStack) deployNetworkToAWS(ctx context.Context, inputs *DeployInfr
 	}
 
 	t.deployConfig.AWS.VpcID = strings.Trim(vpcIdOutput, `"`)
-	if err := t.deployConfig.WriteToJSONFile(t.deploymentPath); err != nil {
+	if err := utils.WriteConfigToJSONFile(t.deploymentPath, t.deployConfig); err != nil {
 		return fmt.Errorf("failed to write settings file: %w", err)
 	}
 
@@ -264,7 +264,7 @@ func (t *ThanosStack) deployNetworkToAWS(ctx context.Context, inputs *DeployInfr
 	}
 
 	t.deployConfig.ChainName = inputs.ChainName
-	if err := t.deployConfig.WriteToJSONFile(t.deploymentPath); err != nil {
+	if err := utils.WriteConfigToJSONFile(t.deploymentPath, t.deployConfig); err != nil {
 		return fmt.Errorf("failed to write settings file: %w", err)
 	}
 
@@ -374,7 +374,7 @@ func (t *ThanosStack) deployNetworkToAWS(ctx context.Context, inputs *DeployInfr
 	t.deployConfig.L2RpcUrl = l2RPCUrl
 	t.deployConfig.L1BeaconURL = inputs.L1BeaconURL
 
-	err = t.deployConfig.WriteToJSONFile(t.deploymentPath)
+	err = utils.WriteConfigToJSONFile(t.deploymentPath, t.deployConfig)
 	if err != nil {
 		t.logger.Error("Error saving configuration file", "err", err)
 		return err

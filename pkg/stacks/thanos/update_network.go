@@ -180,7 +180,7 @@ func (t *ThanosStack) UpdateNetwork(ctx context.Context, inputs *UpdateNetworkIn
 		}
 	}
 
-	if err = t.deployConfig.WriteToJSONFile(t.deploymentPath); err != nil {
+	if err = utils.WriteConfigToJSONFile(t.deploymentPath, t.deployConfig); err != nil {
 		t.logger.Error("Error writing to settings.json", "err", err)
 		return err
 	}

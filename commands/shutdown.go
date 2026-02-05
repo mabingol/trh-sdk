@@ -383,7 +383,7 @@ func ActionShutdownRun() cli.ActionFunc {
 			sc.Config.Shutdown = &types.ShutdownConfig{}
 		}
 		sc.Config.Shutdown.AssetsDataPath = fmt.Sprintf("data/generate-assets-%d.json", sc.Config.L2ChainID)
-		sc.Config.WriteToJSONFile(sc.DeploymentPath)
+		utils.WriteConfigToJSONFile(sc.DeploymentPath, sc.Config)
 
 		fmt.Println("✅ Step [GEN] completed successfully (Path saved to settings.json).")
 

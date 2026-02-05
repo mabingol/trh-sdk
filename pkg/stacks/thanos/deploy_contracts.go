@@ -304,7 +304,7 @@ func (t *ThanosStack) DeployContracts(ctx context.Context, deployContractsConfig
 		t.deployConfig.DeployContractState = &types.DeployContractState{
 			Status: types.DeployContractStatusInProgress,
 		}
-		err = t.deployConfig.WriteToJSONFile(t.deploymentPath)
+		err = utils.WriteConfigToJSONFile(t.deploymentPath, t.deployConfig)
 		if err != nil {
 			t.logger.Error("Failed to write settings file", "err", err)
 			return err
@@ -424,7 +424,7 @@ func (t *ThanosStack) deployContracts(ctx context.Context,
 	t.logger.Info("✅ Contract deployment completed successfully!")
 
 	t.deployConfig.DeployContractState.Status = types.DeployContractStatusCompleted
-	err = t.deployConfig.WriteToJSONFile(t.deploymentPath)
+	err = utils.WriteConfigToJSONFile(t.deploymentPath, t.deployConfig)
 	if err != nil {
 		t.logger.Error("Failed to write settings file", "err", err)
 		return err

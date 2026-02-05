@@ -13,6 +13,32 @@ import (
 	"github.com/tokamak-network/trh-sdk/pkg/types"
 )
 
+// cachedPassword stores the decryption password in memory during the session.
+// This is used to re-encrypt the config when saving updates.
+// The password is never written to disk.
+var cachedPassword []byte
+
+// GetCachedPassword returns the cached password for re-encryption.
+// Returns nil if no password has been cached (i.e., config was not encrypted).
+func GetCachedPassword() []byte {
+	return cachedPassword
+}
+
+// ClearCachedPassword clears the cached password from memory.
+func ClearCachedPassword() {
+	cachedPassword = nil
+}
+
+// IsConfigEncrypted checks if the settings file at the given path is encrypted.
+func IsConfigEncrypted(deploymentPath string) bool {
+	filePath := fmt.Sprintf("%s/%s", deploymentPath, types.ConfigFileName)
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		return false
+	}
+	return crypto.IsEncryptedKeystore(data)
+}
+
 func CopyFile(src, dst string) error {
 	// Open the source file
 	sourceFile, err := os.Open(src)
@@ -190,12 +216,19 @@ func isEncryptedSettings(data []byte) bool {
 	return crypto.IsEncryptedKeystore(data)
 }
 
-// getSettingsPassword gets password from env var or prompts user
+// getSettingsPassword gets password from env var or prompts user.
+// The password is cached in memory for re-encryption when saving config.
 func getSettingsPassword() ([]byte, error) {
-	return crypto.GetPasswordFromEnvOrPrompt(
+	password, err := crypto.GetPasswordFromEnvOrPrompt(
 		crypto.PasswordEnvVar,
 		"Enter settings password: ",
 	)
+	if err != nil {
+		return nil, err
+	}
+	// Cache the password for later use when saving config
+	cachedPassword = password
+	return password, nil
 }
 
 // decryptSettings decrypts the encrypted settings data
@@ -210,4 +243,32 @@ func decryptSettings(data, password []byte) ([]byte, error) {
 // EncryptAndSaveConfig encrypts and saves config to settings.json
 func EncryptAndSaveConfig(deploymentPath string, config *types.Config, password []byte) error {
 	return crypto.WriteEncryptedConfig(deploymentPath, config, password)
+}
+
+// WriteConfigToJSONFile writes config to settings.json, preserving encryption if it was encrypted.
+// If the original file was encrypted and we have the cached password, the output will be encrypted.
+// Otherwise, it writes plaintext JSON.
+func WriteConfigToJSONFile(deploymentPath string, config *types.Config) error {
+	// Check if we should preserve encryption
+	if cachedPassword != nil && IsConfigEncrypted(deploymentPath) {
+		return crypto.WriteEncryptedConfig(deploymentPath, config, cachedPassword)
+	}
+
+	// Check if password is cached but file doesn't exist yet (first write after encryption was enabled)
+	if cachedPassword != nil {
+		return crypto.WriteEncryptedConfig(deploymentPath, config, cachedPassword)
+	}
+
+	// Write plaintext JSON
+	data, err := json.MarshalIndent(config, "", "  ")
+	if err != nil {
+		return fmt.Errorf("failed to marshal config: %w", err)
+	}
+
+	fileName := filepath.Join(deploymentPath, types.ConfigFileName)
+	if err := os.WriteFile(fileName, data, types.SecureFileMode); err != nil {
+		return fmt.Errorf("failed to write config: %w", err)
+	}
+
+	return nil
 }

@@ -112,7 +112,7 @@ func (t *ThanosStack) destroyInfraOnAWS(ctx context.Context) error {
 
 	t.deployConfig.K8s = nil
 	t.deployConfig.ChainName = ""
-	err = t.deployConfig.WriteToJSONFile(t.deploymentPath)
+	err = utils.WriteConfigToJSONFile(t.deploymentPath, t.deployConfig)
 	if err != nil {
 		t.logger.Warnf("Failed to write the updated config: %v. Resources are already destroyed.", err)
 		// Continue even if config write fails, as resources are already destroyed

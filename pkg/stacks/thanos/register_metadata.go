@@ -564,7 +564,7 @@ func (t *ThanosStack) RegisterMetadata(ctx context.Context, creds *types.GitHubC
 		return nil, fmt.Errorf("failed to create pull request: %w", err)
 	}
 	t.deployConfig.MetadataPRLink = prLink
-	err = t.deployConfig.WriteToJSONFile(t.deploymentPath)
+	err = utils.WriteConfigToJSONFile(t.deploymentPath, t.deployConfig)
 	if err != nil {
 		t.logger.Error("Failed to write settings file ", "err ", err)
 		return nil, err

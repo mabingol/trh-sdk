@@ -150,7 +150,7 @@ func ActionLogCollection() cli.ActionFunc {
 
 		// Save and apply changes
 		if hasChanges {
-			if err := config.WriteToJSONFile(deploymentPath); err != nil {
+			if err := utils.WriteConfigToJSONFile(deploymentPath, config); err != nil {
 				logger.Errorw("Failed to save configuration", "err", err)
 				return fmt.Errorf("failed to save configuration: %w", err)
 			}
